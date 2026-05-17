@@ -22,7 +22,9 @@ public record WordsDTO(
         //@NotNull(message = "Owner id is required")
         //UUID ownerId,
         @Nullable
-        Set<UUID> synonymIds
+        Set<UUID> synonymIds,
+        @Nullable
+        List<TranslationDTO> translations
         )
         // translations optional on create; validate nested DTOs with @Valid in controller if List<TranslationDTO>
         //List<TranslationDTO> translations)

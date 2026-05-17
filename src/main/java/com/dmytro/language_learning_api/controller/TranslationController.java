@@ -20,7 +20,7 @@ public class TranslationController {
     private final TranslationService translationService;
 
     @GetMapping
-    public ResponseEntity<PageResponse<TranslationDTO>> getTranslations(
+    public ResponseEntity<PageResponse<TranslationDTO>> getAllTranslationsByWordId(
             @PathVariable UUID wordId,
             @RequestParam(defaultValue = "0", required = false)int pageNo,
             @RequestParam(defaultValue = "10", required = false)int pageSize
@@ -29,17 +29,23 @@ public class TranslationController {
     }
 
     @GetMapping("/{translationId}")
-    public ResponseEntity<TranslationDTO> getTranslation(@PathVariable UUID translationId){
+    public ResponseEntity<TranslationDTO> getTranslationById(@PathVariable UUID translationId){
         return ResponseEntity.ok(translationService.getTranslationById(translationId));
     }
 
     @PostMapping
-    public ResponseEntity<TranslationDTO> addTranslation(@PathVariable UUID wordId, @Valid @RequestBody TranslationDTO translationDto) {
+    public ResponseEntity<TranslationDTO> addTranslation(
+            @PathVariable UUID wordId
+            , @Valid @RequestBody TranslationDTO translationDto
+    ) {
         return ResponseEntity.ok(translationService.addTranslation(wordId, translationDto));
     }
 
     @PutMapping("/{translationId}")
-    public ResponseEntity<TranslationDTO> updateTranslation(@PathVariable UUID translationId, @Valid @RequestBody TranslationDTO translationDto){
+    public ResponseEntity<TranslationDTO> updateTranslation(
+            @PathVariable UUID translationId
+            , @Valid @RequestBody TranslationDTO translationDto
+    ){
         return ResponseEntity.ok(translationService.updateTranslation(translationId, translationDto));
     }
 

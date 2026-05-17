@@ -1,8 +1,8 @@
 package com.dmytro.language_learning_api.controller;
 
-import com.dmytro.language_learning_api.dto.CreateWordRequestDTO;
+import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
 import com.dmytro.language_learning_api.dto.TranslationDTO;
-import com.dmytro.language_learning_api.dto.UpdateWordRequest;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
 import com.dmytro.language_learning_api.dto.WordsDTO;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.service.WordsService;
@@ -32,7 +32,7 @@ public class WordsController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<PageResponse<WordsDTO>> getAllWordsByOwnerId(
+    public ResponseEntity<PageResponse<WordsDTO>> getAllWordsByOwnerEmail(
             Authentication authentication,
             @RequestParam(defaultValue = "0", required = false)int pageNo,
             @RequestParam(defaultValue = "10", required = false)int pageSize

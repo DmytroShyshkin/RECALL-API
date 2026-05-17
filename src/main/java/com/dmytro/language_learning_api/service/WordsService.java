@@ -1,8 +1,8 @@
 package com.dmytro.language_learning_api.service;
 
-import com.dmytro.language_learning_api.dto.CreateWordRequestDTO;
+import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
 import com.dmytro.language_learning_api.dto.TranslationDTO;
-import com.dmytro.language_learning_api.dto.UpdateWordRequest;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
 import com.dmytro.language_learning_api.dto.WordsDTO;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 
