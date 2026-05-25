@@ -121,7 +121,8 @@ public class WordsServiceImpl implements WordsService {
                             dto.sourceLanguage(),
                             dto.originalWord(),
                             //dto.ownerId(),
-                            synonymIds
+                            synonymIds,
+                            null
                     );
 
                 })
