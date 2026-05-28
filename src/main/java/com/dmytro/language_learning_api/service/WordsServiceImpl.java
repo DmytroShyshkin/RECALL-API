@@ -1,8 +1,8 @@
 package com.dmytro.language_learning_api.service;
 
-import com.dmytro.language_learning_api.dto.CreateWordRequestDTO;
+import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
 import com.dmytro.language_learning_api.dto.TranslationDTO;
-import com.dmytro.language_learning_api.dto.UpdateWordRequest;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
 import com.dmytro.language_learning_api.dto.WordsDTO;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
@@ -116,12 +116,19 @@ public class WordsServiceImpl implements WordsService {
                             .map(Words::getId)
                             .collect(Collectors.toSet());
 
+                    List<TranslationDTO> translations = word.getTranslations() == null
+                            ? Collections.emptyList()
+                            : word.getTranslations().stream()
+                              .map(translationMapper::toDto)
+                              .toList();
+
                     return new WordsDTO(
                             dto.id(),
                             dto.sourceLanguage(),
                             dto.originalWord(),
                             //dto.ownerId(),
-                            synonymIds
+                            synonymIds,
+                            translations
                     );
 
                 })
