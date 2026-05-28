@@ -116,13 +116,19 @@ public class WordsServiceImpl implements WordsService {
                             .map(Words::getId)
                             .collect(Collectors.toSet());
 
+                    List<TranslationDTO> translations = word.getTranslations() == null
+                            ? Collections.emptyList()
+                            : word.getTranslations().stream()
+                              .map(translationMapper::toDto)
+                              .toList();
+
                     return new WordsDTO(
                             dto.id(),
                             dto.sourceLanguage(),
                             dto.originalWord(),
                             //dto.ownerId(),
                             synonymIds,
-                            null
+                            translations
                     );
 
                 })
