@@ -1,8 +1,8 @@
-# Language Learning API
+# RECALL API
 
-> **EN** | [ES](#language-learning-api-es)
+> **EN** | [ES](#recall-api-es)
 
-A backend REST API for a language learning application inspired by **Anki**, designed to simplify foreign language acquisition through vocabulary management, translations, synonyms, and spaced repetition logic.
+RECALL (*RECALL Enables Contextual And Language Learning*) — a backend REST API for a language learning application inspired by **Anki**, designed to simplify foreign language acquisition through vocabulary management, translations, synonyms, and spaced repetition logic.
 
 ---
 
@@ -94,11 +94,11 @@ DAM Student · Java Backend Developer
 ---
 ---
 
-# Language Learning API (ES)
+# RECALL API (ES)
 
-> [EN](#language-learning-api) | **ES**
+> [EN](#recall-api) | **ES**
 
-API REST backend para una aplicación de aprendizaje de idiomas inspirada en **Anki**, diseñada para simplificar la adquisición de vocabulario en lenguas extranjeras mediante gestión de palabras, traducciones, sinónimos y lógica de repaso espaciado.
+RECALL (*RECALL Enables Contextual And Language Learning*) — API REST backend para una aplicación de aprendizaje de idiomas inspirada en **Anki**, diseñada para simplificar la adquisición de vocabulario en lenguas extranjeras mediante gestión de palabras, traducciones, sinónimos y lógica de repaso espaciado.
 
 ---
 
