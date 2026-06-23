@@ -21,8 +21,11 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${spring.kafka.properties.sasl.jaas.config}")
-    private String jaasConfig;
+    @Value("${kafka.username}")
+    private String kafkaUsername;
+
+    @Value("${kafka.password}")
+    private String kafkaPassword;
 
     @Bean
     public ConsumerFactory<String, AnkiCardReviewedEvent> consumerFactory() {
@@ -32,9 +35,14 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
+        props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
+        props.put(ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 30000);
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 45000);
         props.put("security.protocol", "SASL_SSL");
         props.put("sasl.mechanism", "PLAIN");
-        props.put("sasl.jaas.config", jaasConfig);
+        props.put("sasl.jaas.config",
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username='"
+                        + kafkaUsername + "' password='" + kafkaPassword + "';");
         props.put("spring.json.trusted.packages", "*");
         props.put("spring.json.value.default.type", AnkiCardReviewedEvent.class.getName());
         return new DefaultKafkaConsumerFactory<>(props);
