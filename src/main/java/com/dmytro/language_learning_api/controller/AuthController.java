@@ -48,11 +48,7 @@ public class AuthController {
         String refreshToken = jwtService.generateRefreshToken(request.email());
 
         cookieService.addRefreshToken(response, refreshToken);
-        /*
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(authService.login(dto));
-         */
+
         return ResponseEntity.ok(authResponse);
     }
 
@@ -61,11 +57,6 @@ public class AuthController {
         String refreshToken = cookieService.extractRefreshToken(request);
 
         return ResponseEntity.ok(authService.refresh(refreshToken));
-        /*
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(authService.refresh(refreshToken));
-         */
     }
 
     @PostMapping("/resend-verification")

@@ -35,6 +35,6 @@ public class JwtUtil {
             throw new RuntimeException("No authenticated user");
         }
 
-        return auth.getName(); // devuelve email
+        return auth.getName(); // return email
     }
 }
