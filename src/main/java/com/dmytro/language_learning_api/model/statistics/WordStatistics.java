@@ -4,7 +4,7 @@ import com.dmytro.language_learning_api.model.Users;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 
 import java.time.LocalDateTime;
