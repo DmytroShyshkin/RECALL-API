@@ -1,6 +1,6 @@
 package com.dmytro.language_learning_api.service.statistics;
 
-import com.dmytro.language_learning_api.kafka.AnkiCardReviewedEvent;
+import com.dmytro.language_learning_api.kafka.anki.AnkiCardReviewedEvent;
 import com.dmytro.language_learning_api.model.Users;
 import com.dmytro.language_learning_api.model.statistics.UserActivity;
 import com.dmytro.language_learning_api.model.statistics.WordReviewLog;
