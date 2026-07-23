@@ -14,6 +14,7 @@ import com.dmytro.language_learning_api.model.Users;
 import com.dmytro.language_learning_api.model.Words;
 import com.dmytro.language_learning_api.repository.UsersRepository;
 import com.dmytro.language_learning_api.repository.WordsRepository;
+import com.dmytro.language_learning_api.repository.statistics.WordStatisticsRepository;
 import com.dmytro.language_learning_api.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ public class WordsServiceImpl implements WordsService {
     // Repository
     private final WordsRepository wordsRepository;
     private final UsersRepository usersRepository;
+    private final WordStatisticsRepository wordStatisticsRepository;
 
     // Security helper
     private final JwtUtil jwtUtil;
@@ -181,8 +183,10 @@ public class WordsServiceImpl implements WordsService {
     }
 
     @Override
+    @Transactional
     public void deleteWord(UUID wordId) {
         Words word = getWordOrThrow(wordId);
+        wordStatisticsRepository.deleteByWordId(wordId);
         wordsRepository.delete(word);
     }
 

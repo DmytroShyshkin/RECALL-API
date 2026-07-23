@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface WordStatisticsRepository extends JpaRepository<WordStatistics, UUID> {
+    void deleteByWordId(UUID wordId);
     Optional<WordStatistics> findByWordIdAndUserId(UUID wordId, UUID userId);
     List<WordStatistics> findByUserId(UUID userId);
 }
