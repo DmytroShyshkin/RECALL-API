@@ -7,6 +7,8 @@ import com.dmytro.language_learning_api.dto.WordsDTO;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
+import com.dmytro.language_learning_api.kafka.word.WordDeletedEvent;
+import com.dmytro.language_learning_api.kafka.word.WordDeletedProducer;
 import com.dmytro.language_learning_api.mapper.TranslationMapper;
 import com.dmytro.language_learning_api.mapper.WordsMapper;
 import com.dmytro.language_learning_api.model.Translation;
@@ -42,6 +44,9 @@ public class WordsServiceImpl implements WordsService {
     private final WordsRepository wordsRepository;
     private final UsersRepository usersRepository;
     private final WordStatisticsRepository wordStatisticsRepository;
+
+    // Kafka
+    private final WordDeletedProducer producer;
 
     // Security helper
     private final JwtUtil jwtUtil;
@@ -186,6 +191,7 @@ public class WordsServiceImpl implements WordsService {
     @Transactional
     public void deleteWord(UUID wordId) {
         Words word = getWordOrThrow(wordId);
+        producer.sendDeletedEvent(new WordDeletedEvent(wordId, word.getOwner().getEmail()));
         wordStatisticsRepository.deleteByWordId(wordId);
         wordsRepository.delete(word);
     }
