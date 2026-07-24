@@ -32,7 +32,7 @@ public class WordStatisticsService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 1. Сохраняем лог
+        // Save the log
         reviewLogRepository.save(WordReviewLog.builder()
                 .cardId(event.cardId())
                 .wordId(event.wordId())
@@ -42,7 +42,7 @@ public class WordStatisticsService {
                 .reviewedAt(now)
                 .build());
 
-        // 2. Обновляем агрегированную статистику по слову
+        // Updating Aggregated Statistics by Word
         WordStatistics stats = statisticsRepository
                 .findByWordIdAndUserId(event.wordId(), user.getId())
                 .orElseGet(() -> WordStatistics.builder()
@@ -64,7 +64,7 @@ public class WordStatisticsService {
 
         statisticsRepository.save(stats);
 
-        // 3. Обновляем активность за сегодня (для streak)
+        // Updating today's activity (for the streak)
         LocalDate today = LocalDate.now();
         UserActivity activity = userActivityRepository
                 .findByUserIdAndActivityDate(user.getId(), today)
