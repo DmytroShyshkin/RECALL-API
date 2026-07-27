@@ -10,7 +10,7 @@ public class WordDeletedProducer {
     private static final String TOPIC = "recall.delete.word";
     private final KafkaTemplate<String, WordDeletedEvent> kafkaTemplate;
 
-    public void sendDeletedEvent(WordDeletedEvent event) {
+    public void sendDeletedWordEvent(WordDeletedEvent event) {
         kafkaTemplate.send(TOPIC, event.wordId().toString(), event);
     }
 }

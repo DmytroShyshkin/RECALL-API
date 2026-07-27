@@ -191,7 +191,7 @@ public class WordsServiceImpl implements WordsService {
     @Transactional
     public void deleteWord(UUID wordId) {
         Words word = getWordOrThrow(wordId);
-        producer.sendDeletedEvent(new WordDeletedEvent(wordId, word.getOwner().getEmail()));
+        producer.sendDeletedWordEvent(new WordDeletedEvent(wordId, word.getOwner().getEmail()));
         wordStatisticsRepository.deleteByWordId(wordId);
         wordsRepository.delete(word);
     }

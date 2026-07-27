@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AnkiReviewConsumer {
+public class AnkiCardReviewedConsumer {
 
     private final WordStatisticsService statisticsService;
 
