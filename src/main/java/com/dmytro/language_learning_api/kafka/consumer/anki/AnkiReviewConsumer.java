@@ -1,4 +1,4 @@
-package com.dmytro.language_learning_api.kafka.anki;
+package com.dmytro.language_learning_api.kafka.consumer.anki;
 
 import com.dmytro.language_learning_api.service.statistics.WordStatisticsService;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.dmytro.language_learning_api.kafka.word;
+package com.dmytro.language_learning_api.kafka.producer.word;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -1,4 +1,4 @@
-package com.dmytro.language_learning_api.kafka.anki;
+package com.dmytro.language_learning_api.kafka.consumer.anki;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

@@ -1,4 +1,4 @@
-package com.dmytro.language_learning_api.kafka.word;
+package com.dmytro.language_learning_api.kafka.producer.word;
 
 import java.util.UUID;
 

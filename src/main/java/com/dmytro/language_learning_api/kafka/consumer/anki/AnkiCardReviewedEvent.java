@@ -1,4 +1,4 @@
-package com.dmytro.language_learning_api.kafka.anki;
+package com.dmytro.language_learning_api.kafka.consumer.anki;
 
 import java.util.UUID;
 
