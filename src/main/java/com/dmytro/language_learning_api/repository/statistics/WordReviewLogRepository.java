@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface WordReviewLogRepository extends JpaRepository<WordReviewLog, UUID> {
     List<WordReviewLog> findByUserIdOrderByReviewedAtDesc(UUID userId);
     List<WordReviewLog> findByWordIdAndUserId(UUID wordId, UUID userId);
+
+    void deleteByUserId(UUID userId);
 }

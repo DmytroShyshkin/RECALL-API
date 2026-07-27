@@ -30,6 +30,7 @@ public class StatisticsController {
         return statisticsRepository.findByUserId(user.getId()).stream()
                 .map(s -> new WordStatisticsResponse(
                         s.getWordId(),
+                        s.getWordName(),
                         s.getTotalReviews(),
                         s.getCorrectReviews(),
                         s.getLapses(),

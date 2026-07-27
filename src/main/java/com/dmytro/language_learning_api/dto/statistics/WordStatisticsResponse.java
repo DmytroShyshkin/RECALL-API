@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record WordStatisticsResponse(
         UUID wordId
+        , String word
         , int totalReviews
         , int correctReviews
         , int lapses

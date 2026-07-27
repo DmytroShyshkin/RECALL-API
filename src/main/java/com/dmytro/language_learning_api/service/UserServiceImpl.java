@@ -11,7 +11,11 @@ import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFound
 import com.dmytro.language_learning_api.mapper.UsersMapper;
 import com.dmytro.language_learning_api.model.Users;
 import com.dmytro.language_learning_api.repository.UsersRepository;
-import com.dmytro.language_learning_api.security.PasswordEncoderConfig;
+import com.dmytro.language_learning_api.repository.WordsRepository;
+import com.dmytro.language_learning_api.repository.statistics.UserActivityRepository;
+import com.dmytro.language_learning_api.repository.statistics.WordReviewLogRepository;
+import com.dmytro.language_learning_api.repository.statistics.WordStatisticsRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,13 +24,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UsersRepository usersRepository;
+    private final WordsRepository wordsRepository;
+    private final UserActivityRepository userActivityRepository;
+    private final WordReviewLogRepository  wordReviewLogRepository;
+    private final WordStatisticsRepository wordStatisticsRepository;
+
     private final UsersMapper usersMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -119,9 +127,15 @@ public class UserServiceImpl implements UserService {
         usersRepository.save(user);
     }
 
+    @Transactional
     public void deleteUserByEmail(String email) {
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found."));
+
+        wordStatisticsRepository.deleteByUserId(user.getId());
+        wordReviewLogRepository.deleteByUserId(user.getId());
+        userActivityRepository.deleteByUserId(user.getId());
+        wordsRepository.deleteByOwnerId(user.getId());
         usersRepository.delete(user);
     }
 

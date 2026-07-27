@@ -18,4 +18,6 @@ public interface WordsRepository extends JpaRepository<Words, UUID> {
        WHERE w.owner.id = :ownerId
        """)
     Page<Words> findByOwnerId(UUID ownerId, Pageable pageable);
+
+    void deleteByOwnerId(UUID ownerId);
 }

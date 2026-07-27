@@ -29,6 +29,9 @@ public class WordStatistics {
     @Column(name = "word_id", nullable = false)
     private UUID wordId;
 
+    @Column(nullable = false)
+    private String word;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private Users user;

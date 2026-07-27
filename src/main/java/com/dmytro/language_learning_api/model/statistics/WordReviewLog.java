@@ -29,6 +29,9 @@ public class WordReviewLog {
     @Column(nullable = false)
     private UUID wordId;
 
+    @Column(nullable = false)
+    private String wordName;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private Users user;

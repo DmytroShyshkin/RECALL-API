@@ -13,4 +13,6 @@ public interface WordStatisticsRepository extends JpaRepository<WordStatistics, 
     void deleteByWordId(UUID wordId);
     Optional<WordStatistics> findByWordIdAndUserId(UUID wordId, UUID userId);
     List<WordStatistics> findByUserId(UUID userId);
+
+    void deleteByUserId(UUID userId);
 }
