@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserDeleteProducer {
     private static final String TOPIC = "recall.user.delete";
-    @Qualifier("userDeletedProducerFactory")
+    @Qualifier("userDeletedKafkaTemplate")
     private final KafkaTemplate<String, UserDeleteEvent> kafkaTemplate;
 
     public void sendDeletedUserEvent(UserDeleteEvent event) {

@@ -35,7 +35,7 @@ public class KafkaUserDeleteProducerConfig {
         return new DefaultKafkaProducerFactory<>(props);
     }
 
-    @Bean("userDeletedProducerFactory")
+    @Bean("userDeletedKafkaTemplate")
     public KafkaTemplate<String, UserDeleteEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
