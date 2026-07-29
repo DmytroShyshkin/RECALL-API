@@ -22,7 +22,7 @@ public class KafkaWordDeletedProducerConfig {
     @Value("${spring.kafka.properties.sasl.jaas.config}")
     private String jaasConfig;
 
-    @Bean
+    @Bean("wordDeletedKafkaTemplate")
     public ProducerFactory<String, WordDeletedEvent> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -35,7 +35,7 @@ public class KafkaWordDeletedProducerConfig {
         return new DefaultKafkaProducerFactory<>(props);
     }
 
-    @Bean
+    @Bean("wordDeletedKafkaTemplate")
     public KafkaTemplate<String, WordDeletedEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
