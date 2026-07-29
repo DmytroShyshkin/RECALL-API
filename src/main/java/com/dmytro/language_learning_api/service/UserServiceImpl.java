@@ -8,6 +8,8 @@ import com.dmytro.language_learning_api.exception.ConflictException.EmailAlready
 import com.dmytro.language_learning_api.exception.ConflictException.UsernameAlreadyExistsException;
 import com.dmytro.language_learning_api.exception.NotFoundException.NotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
+import com.dmytro.language_learning_api.kafka.producer.userDelete.UserDeleteEvent;
+import com.dmytro.language_learning_api.kafka.producer.userDelete.UserDeleteProducer;
 import com.dmytro.language_learning_api.mapper.UsersMapper;
 import com.dmytro.language_learning_api.model.Users;
 import com.dmytro.language_learning_api.repository.UsersRepository;
@@ -34,6 +36,9 @@ public class UserServiceImpl implements UserService {
     private final UserActivityRepository userActivityRepository;
     private final WordReviewLogRepository  wordReviewLogRepository;
     private final WordStatisticsRepository wordStatisticsRepository;
+
+    // Kafka
+    private final UserDeleteProducer producer;
 
     private final UsersMapper usersMapper;
     private final PasswordEncoder passwordEncoder;
@@ -131,6 +136,8 @@ public class UserServiceImpl implements UserService {
     public void deleteUserByEmail(String email) {
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found."));
+
+        producer.sendDeletedUserEvent(new UserDeleteEvent(email));
 
         wordStatisticsRepository.deleteByUserId(user.getId());
         wordReviewLogRepository.deleteByUserId(user.getId());
