@@ -36,7 +36,7 @@ public class WordStatisticsService {
         reviewLogRepository.save(WordReviewLog.builder()
                 .cardId(event.cardId())
                 .wordId(event.wordId())
-                .wordName(event.word())
+                .word(event.word())
                 .user(user)
                 .rating(event.rating())
                 .newState(event.newState())
