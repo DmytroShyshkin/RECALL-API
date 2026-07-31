@@ -30,7 +30,7 @@ public class WordReviewLog {
     private UUID wordId;
 
     @Column(nullable = false)
-    private String wordName;
+    private String word;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
