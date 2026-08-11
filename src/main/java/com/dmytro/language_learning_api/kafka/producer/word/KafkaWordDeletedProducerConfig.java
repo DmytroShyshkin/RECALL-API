@@ -22,6 +22,9 @@ public class KafkaWordDeletedProducerConfig {
     @Value("${spring.kafka.properties.sasl.jaas.config}")
     private String jaasConfig;
 
+    @Value("${spring.kafka.properties.ssl.truststore.certificates}")
+    private String trustStoreCertificates;
+
     @Bean("wordDeletedProducerFactory")
     public ProducerFactory<String, WordDeletedEvent> producerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -32,6 +35,8 @@ public class KafkaWordDeletedProducerConfig {
         props.put("security.protocol", "SASL_SSL");
         props.put("sasl.mechanism", "PLAIN");
         props.put("sasl.jaas.config", jaasConfig);
+        props.put("ssl.truststore.type", "PEM");
+        props.put("ssl.truststore.certificates", trustStoreCertificates);
         return new DefaultKafkaProducerFactory<>(props);
     }
 
