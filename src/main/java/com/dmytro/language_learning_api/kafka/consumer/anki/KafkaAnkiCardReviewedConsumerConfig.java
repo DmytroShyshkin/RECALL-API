@@ -27,6 +27,9 @@ public class KafkaAnkiCardReviewedConsumerConfig {
     @Value("${kafka.password}")
     private String kafkaPassword;
 
+    @Value("${spring.kafka.properties.ssl.truststore.certificates}")
+    private String trustStoreCertificates;
+
     @Bean
     public ConsumerFactory<String, AnkiCardReviewedEvent> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -45,6 +48,8 @@ public class KafkaAnkiCardReviewedConsumerConfig {
                         + kafkaUsername + "' password='" + kafkaPassword + "';");
         props.put("spring.json.trusted.packages", "*");
         props.put("spring.json.value.default.type", AnkiCardReviewedEvent.class.getName());
+        props.put("ssl.truststore.type", "PEM");
+        props.put("ssl.truststore.certificates", trustStoreCertificates);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
