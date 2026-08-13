@@ -1,5 +1,7 @@
 package com.dmytro.language_learning_api.security.config;
 
+import com.dmytro.language_learning_api.security.RestAccessDeniedHandler;
+import com.dmytro.language_learning_api.security.RestAuthenticationEntryPoint;
 import com.dmytro.language_learning_api.security.jwt.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +31,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling
+                                .accessDeniedHandler(new RestAccessDeniedHandler())
+                                .authenticationEntryPoint(new RestAuthenticationEntryPoint())
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
