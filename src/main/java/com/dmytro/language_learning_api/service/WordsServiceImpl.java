@@ -1,9 +1,23 @@
 package com.dmytro.language_learning_api.service;
 
-import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.dmytro.language_learning_api.dto.TranslationDTO;
-import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
 import com.dmytro.language_learning_api.dto.WordsDTO;
+import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
@@ -18,20 +32,8 @@ import com.dmytro.language_learning_api.repository.UsersRepository;
 import com.dmytro.language_learning_api.repository.WordsRepository;
 import com.dmytro.language_learning_api.repository.statistics.WordStatisticsRepository;
 import com.dmytro.language_learning_api.security.jwt.JwtUtil;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -77,7 +79,7 @@ public class WordsServiceImpl implements WordsService {
         Set<UUID> synonymIds = word.getSynonyms() == null
                 ? Collections.emptySet()
                 : word.getSynonyms().stream()
-                .map(Words::getId)
+                .map(w -> w.getId())
                 .collect(Collectors.toSet());
 
         return wordsMapper.toDto(word);
@@ -120,7 +122,7 @@ public class WordsServiceImpl implements WordsService {
                     Set<UUID> synonymIds = word.getSynonyms() == null
                             ? Collections.emptySet()
                             : word.getSynonyms().stream()
-                            .map(Words::getId)
+                            .map(w -> w.getId())
                             .collect(Collectors.toSet());
 
                     List<TranslationDTO> translations = word.getTranslations() == null
@@ -133,7 +135,6 @@ public class WordsServiceImpl implements WordsService {
                             dto.id(),
                             dto.sourceLanguage(),
                             dto.originalWord(),
-                            //dto.ownerId(),
                             synonymIds,
                             translations
                     );

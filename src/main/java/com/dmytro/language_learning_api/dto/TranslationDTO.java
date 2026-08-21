@@ -1,11 +1,10 @@
 package com.dmytro.language_learning_api.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
-import java.util.List;
-import java.util.UUID;
 
 public record TranslationDTO(
         UUID id,
@@ -20,10 +19,5 @@ public record TranslationDTO(
         String translatedWord,
 
         String description
-
-        //List<SynonymDTO> synonyms
-        //@NotBlank
-        //Words word,
-        //String source
         ) {
 }

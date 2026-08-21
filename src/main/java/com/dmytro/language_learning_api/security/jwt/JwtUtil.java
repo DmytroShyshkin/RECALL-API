@@ -1,13 +1,14 @@
 package com.dmytro.language_learning_api.security.jwt;
 
-import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
-import com.dmytro.language_learning_api.model.Users;
-import com.dmytro.language_learning_api.repository.UsersRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
+import com.dmytro.language_learning_api.model.Users;
+import com.dmytro.language_learning_api.repository.UsersRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

@@ -1,9 +1,8 @@
 package com.dmytro.language_learning_api.dto.error;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDateTime;
+
+import lombok.Getter;
 
 @Getter
 public class ErrorResponse {

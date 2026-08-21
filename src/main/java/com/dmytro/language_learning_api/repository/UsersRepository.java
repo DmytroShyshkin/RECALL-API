@@ -1,15 +1,12 @@
 package com.dmytro.language_learning_api.repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import com.dmytro.language_learning_api.model.Users;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.dmytro.language_learning_api.model.Users;
+
 public interface UsersRepository extends JpaRepository<Users, UUID> {
     Optional<Users> findByEmail(String email);
     Optional<Users> findByUsername(String username);

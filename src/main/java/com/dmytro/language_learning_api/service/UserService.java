@@ -4,8 +4,6 @@ import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.requests.getRequests.GetUserDataDTO;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 
-import java.util.UUID;
-
 public interface UserService {
 
     PageResponse<UsersDTO> getAllUsers(int pageNo, int pageSize);

@@ -1,12 +1,31 @@
 package com.dmytro.language_learning_api.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
-import lombok.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "words")
@@ -45,5 +64,7 @@ public class Words {
             joinColumns = @JoinColumn(name = "word_id"),
             inverseJoinColumns = @JoinColumn(name = "synonym_id")
     )
+
+    @Builder.Default
     private Set<Words> synonyms = new HashSet<>();
 }

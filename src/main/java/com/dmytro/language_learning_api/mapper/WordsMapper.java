@@ -1,15 +1,16 @@
 package com.dmytro.language_learning_api.mapper;
 
-import com.dmytro.language_learning_api.dto.WordsDTO;
-import com.dmytro.language_learning_api.model.Words;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+import com.dmytro.language_learning_api.dto.WordsDTO;
+import com.dmytro.language_learning_api.model.Words;
 
 @Mapper(componentModel = "spring", uses = {TranslationMapper.class})
 public interface WordsMapper {
@@ -21,7 +22,7 @@ public interface WordsMapper {
     default Set<UUID> synonymsToIds(Set<Words> synonyms) {
         if (synonyms == null) return Collections.emptySet();
         return synonyms.stream()
-                .map(Words::getId)
+                .map(w -> w.getId())
                 .collect(Collectors.toSet());
     }
 

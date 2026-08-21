@@ -1,11 +1,11 @@
 package com.dmytro.language_learning_api.mapper;
 
+import java.util.List;
+
+import org.mapstruct.Mapper;
+
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.model.Users;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UsersMapper {

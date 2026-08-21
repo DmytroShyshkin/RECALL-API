@@ -1,18 +1,19 @@
 package com.dmytro.language_learning_api.controller;
 
-import com.dmytro.language_learning_api.dto.statistics.UserStatsSummaryResponse;
-import com.dmytro.language_learning_api.dto.statistics.WordStatisticsResponse;
-import com.dmytro.language_learning_api.model.Users;
-import com.dmytro.language_learning_api.model.statistics.WordStatistics;
-import com.dmytro.language_learning_api.repository.statistics.WordStatisticsRepository;
-import com.dmytro.language_learning_api.security.jwt.JwtUtil;
-import com.dmytro.language_learning_api.service.statistics.StreakService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.dmytro.language_learning_api.dto.statistics.UserStatsSummaryResponse;
+import com.dmytro.language_learning_api.dto.statistics.WordStatisticsResponse;
+import com.dmytro.language_learning_api.model.Users;
+import com.dmytro.language_learning_api.repository.statistics.WordStatisticsRepository;
+import com.dmytro.language_learning_api.security.jwt.JwtUtil;
+import com.dmytro.language_learning_api.service.statistics.StreakService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/statistics")
@@ -46,7 +47,7 @@ public class StatisticsController {
         int streak = streakService.calculateCurrentStreak(user.getId());
         var stats = statisticsRepository.findByUserId(user.getId());
 
-        int totalReviews = stats.stream().mapToInt(WordStatistics::getTotalReviews).sum();
+        int totalReviews = stats.stream().mapToInt(w -> w.getTotalReviews()).sum();
 
         return new UserStatsSummaryResponse(streak, stats.size(), totalReviews);
     }
