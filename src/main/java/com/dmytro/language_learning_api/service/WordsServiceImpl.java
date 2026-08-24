@@ -46,102 +46,70 @@ public class WordsServiceImpl implements WordsService {
     private final WordsRepository wordsRepository;
     private final UsersRepository usersRepository;
     private final WordStatisticsRepository wordStatisticsRepository;
-
+ 
     // Kafka
     private final WordDeletedProducer producer;
-
+ 
     // Security helper
     private final JwtUtil jwtUtil;
-
+ 
     @Override
     public WordsDTO createWord(CreateWordRequestDTO request) {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
-
+ 
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow();
-
+ 
         Words word = new Words();
         word.setOriginalWord(request.originalWord());
         word.setSourceLanguage(request.sourceLanguage());
         word.setOwner(user);
-
+ 
         return wordsMapper.toDto(wordsRepository.save(word));
     }
-
+ 
     @Transactional(readOnly = true)
     @Override
     public WordsDTO getWordById(UUID wordId) {
         Words word = getWordOrThrow(wordId);
-        //return wordsMapper.toDto(word);
-
-        Set<UUID> synonymIds = word.getSynonyms() == null
-                ? Collections.emptySet()
-                : word.getSynonyms().stream()
-                .map(w -> w.getId())
-                .collect(Collectors.toSet());
-
-        return wordsMapper.toDto(word);
+        return toFullDto(word);
     }
-
+ 
     @Override
     public WordsDTO updateWord(UUID wordId, UpdateWordRequest updateWordRequest) {
         Words word = getWordOrThrow(wordId);
-
+ 
         if (updateWordRequest.sourceLanguage() != null && !updateWordRequest.sourceLanguage().isBlank()
                 && !updateWordRequest.sourceLanguage().equals(word.getSourceLanguage())) {
             word.setSourceLanguage(updateWordRequest.sourceLanguage());
         }
-
+ 
         if (updateWordRequest.originalWord() != null && !updateWordRequest.originalWord().isBlank()
                 && !updateWordRequest.originalWord().equals(word.getOriginalWord())) {
             word.setOriginalWord(updateWordRequest.originalWord());
         }
-
+ 
         wordsRepository.save(word);
-
+ 
         return wordsMapper.toDto(word);
     }
-
+ 
     @Override
     public PageResponse<WordsDTO> getAllWordsByOwnerEmail(String ownerEmail, int pageNo, int pageSize) {
         Users user = usersRepository.findByEmail(ownerEmail)
                 .orElseThrow(
                         ()-> new UserNotFoundException("User by email '" + ownerEmail + "' not found")
                 );
-
+ 
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<Words> wordsPage = wordsRepository.findByOwnerId(user.getId(), pageable);
         List<Words> words = wordsPage.getContent();
         List<WordsDTO> wordsList = words.stream()
-                .map(word -> {
-
-                    WordsDTO dto = wordsMapper.toDto(word);
-
-                    Set<UUID> synonymIds = word.getSynonyms() == null
-                            ? Collections.emptySet()
-                            : word.getSynonyms().stream()
-                            .map(w -> w.getId())
-                            .collect(Collectors.toSet());
-
-                    List<TranslationDTO> translations = word.getTranslations() == null
-                            ? Collections.emptyList()
-                            : word.getTranslations().stream()
-                              .map(translationMapper::toDto)
-                              .toList();
-
-                    return new WordsDTO(
-                            dto.id(),
-                            dto.sourceLanguage(),
-                            dto.originalWord(),
-                            synonymIds,
-                            translations
-                    );
-
-                })
+                .map(this::toFullDto)
                 .toList();
-
+ 
         PageResponse<WordsDTO> wordRespons = new PageResponse<>();
         wordRespons.setContent(wordsList);
         wordRespons.setPageNo(wordsPage.getNumber());
@@ -149,45 +117,73 @@ public class WordsServiceImpl implements WordsService {
         wordRespons.setTotalPages(wordsPage.getTotalPages());
         wordRespons.setTotalElements(wordsPage.getTotalElements());
         wordRespons.setLast(wordsPage.isLast());
-
+ 
         return wordRespons;
     }
-
+ 
     @Override
     public WordsDTO addTranslationToWord(UUID wordId, TranslationDTO translationDto) {
         Words word = getWordOrThrow(wordId);
-
+ 
         Translation translation = translationMapper.fromDto(translationDto);
         translation.setWord(word);
-
+ 
         word.getTranslations().add(translation);
         Words savedWord = wordsRepository.save(word);
-
+ 
         return wordsMapper.toDto(savedWord);
     }
-
+ 
+    @Transactional
     @Override
     public void addSynonym(UUID wordId, UUID synonymId) {
+        if (wordId.equals(synonymId)) {
+            throw new IllegalArgumentException("A word cannot be a synonym of itself");
+        }
+ 
         Words word = wordsRepository.findById(wordId)
                 .orElseThrow(() -> new WordNotFoundException("Word not found"));
-
+ 
         Words synonym = wordsRepository.findById(synonymId)
                 .orElseThrow(() -> new WordNotFoundException("Synonym word not found"));
-
+ 
         Users currentUser = jwtUtil.getCurrentUser();
-
+ 
         if (!word.getOwner().equals(currentUser) ||
                 !synonym.getOwner().equals(currentUser)) {
             throw new AccessDeniedException("You don't own these words");
         }
-
+ 
         word.getSynonyms().add(synonym);
         synonym.getSynonyms().add(word);
-
+ 
         wordsRepository.save(word);
         wordsRepository.save(synonym);
     }
-
+ 
+    @Transactional
+    @Override
+    public void removeSynonym(UUID wordId, UUID synonymId) {
+        Words word = wordsRepository.findById(wordId)
+                .orElseThrow(() -> new WordNotFoundException("Word not found"));
+ 
+        Words synonym = wordsRepository.findById(synonymId)
+                .orElseThrow(() -> new WordNotFoundException("Synonym word not found"));
+ 
+        Users currentUser = jwtUtil.getCurrentUser();
+ 
+        if (!word.getOwner().equals(currentUser) ||
+                !synonym.getOwner().equals(currentUser)) {
+            throw new AccessDeniedException("You don't own these words");
+        }
+ 
+        word.getSynonyms().remove(synonym);
+        synonym.getSynonyms().remove(word);
+ 
+        wordsRepository.save(word);
+        wordsRepository.save(synonym);
+    }
+ 
     @Override
     @Transactional
     public void deleteWord(UUID wordId) {
@@ -196,7 +192,7 @@ public class WordsServiceImpl implements WordsService {
         wordStatisticsRepository.deleteByWordId(wordId);
         wordsRepository.delete(word);
     }
-
+ 
     // Clases auxiliares
     private Words getWordOrThrow(UUID wordId) {
         return wordsRepository
@@ -204,5 +200,29 @@ public class WordsServiceImpl implements WordsService {
                 .orElseThrow(() -> new WordNotFoundException(
                         "Word with id " + wordId + " not found"
                 ));
+    }
+
+    private WordsDTO toFullDto(Words word) {
+        WordsDTO dto = wordsMapper.toDto(word);
+
+        Set<UUID> synonymIds = word.getSynonyms() == null
+                ? Collections.emptySet()
+                : word.getSynonyms().stream()
+                .map(arg0 -> arg0.getId())
+                .collect(Collectors.toSet());
+
+        List<TranslationDTO> translations = word.getTranslations() == null
+                ? Collections.emptyList()
+                : word.getTranslations().stream()
+                .map(translationMapper::toDto)
+                .toList();
+ 
+        return new WordsDTO(
+                dto.id(),
+                dto.sourceLanguage(),
+                dto.originalWord(),
+                synonymIds,
+                translations
+        );
     }
 }

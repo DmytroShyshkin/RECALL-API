@@ -1,21 +1,31 @@
 package com.dmytro.language_learning_api.controller;
 
-import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
-import com.dmytro.language_learning_api.dto.TranslationDTO;
-import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
-import com.dmytro.language_learning_api.dto.WordsDTO;
-import com.dmytro.language_learning_api.dto.response.PageResponse;
-import com.dmytro.language_learning_api.service.WordsService;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import com.dmytro.language_learning_api.dto.TranslationDTO;
+import com.dmytro.language_learning_api.dto.WordsDTO;
+import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
+import com.dmytro.language_learning_api.dto.response.PageResponse;
+import com.dmytro.language_learning_api.service.WordsService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/words")
@@ -24,13 +34,13 @@ import java.util.UUID;
 public class WordsController {
 
     public final WordsService wordsService;
-
+ 
     @Transactional(readOnly = true)
     @GetMapping("/{wordId}")
     public ResponseEntity<WordsDTO> getWordsById(@PathVariable UUID wordId) {
         return ResponseEntity.ok(wordsService.getWordById(wordId));
     }
-
+ 
     @GetMapping("/user")
     public ResponseEntity<PageResponse<WordsDTO>> getAllWordsByOwnerEmail(
             Authentication authentication,
@@ -47,7 +57,7 @@ public class WordsController {
                 , HttpStatus.OK
         );
     }
-
+ 
     @PostMapping
     public ResponseEntity<WordsDTO> createWord(@Valid @RequestBody CreateWordRequestDTO request) {
         return ResponseEntity
@@ -55,7 +65,7 @@ public class WordsController {
                 .body(wordsService.createWord(request)
                 );
     }
-
+ 
     @PutMapping("/update-word/{wordId}")
     public ResponseEntity<WordsDTO> updateOriginalWordById(
             @PathVariable UUID wordId,
@@ -63,7 +73,7 @@ public class WordsController {
     ) {
         return ResponseEntity.ok(wordsService.updateWord(wordId, updateWordRequest));
     }
-
+ 
     @PutMapping("/add-translation-to-word/{wordId}")
     public ResponseEntity<WordsDTO> addTranslationToWordById(
             @PathVariable UUID wordId,
@@ -71,7 +81,7 @@ public class WordsController {
     ) {
         return  ResponseEntity.ok(wordsService.addTranslationToWord(wordId, translationDto));
     }
-
+ 
     @PostMapping("/{wordId}/synonyms/{synonymId}")
     public ResponseEntity<Void> addSynonym(
             @PathVariable UUID wordId,
@@ -80,7 +90,16 @@ public class WordsController {
         wordsService.addSynonym(wordId, synonymId);
         return ResponseEntity.noContent().build();
     }
-
+ 
+    @DeleteMapping("/{wordId}/synonyms/{synonymId}")
+    public ResponseEntity<Void> removeSynonym(
+            @PathVariable UUID wordId,
+            @PathVariable UUID synonymId
+    ) {
+        wordsService.removeSynonym(wordId, synonymId);
+        return ResponseEntity.noContent().build();
+    }
+ 
     @DeleteMapping("/delete-word/{wordId}")
     public ResponseEntity<Void> deleteWordById(@PathVariable UUID wordId) {
         wordsService.deleteWord(wordId);
