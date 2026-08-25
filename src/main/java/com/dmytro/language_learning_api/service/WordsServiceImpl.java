@@ -154,9 +154,8 @@ public class WordsServiceImpl implements WordsService {
             throw new AccessDeniedException("You don't own these words");
         }
  
-        word.getSynonyms().add(synonym);
-        synonym.getSynonyms().add(word);
- 
+        linkSynonyms(word, synonym);
+        
         wordsRepository.save(word);
         wordsRepository.save(synonym);
     }
@@ -164,6 +163,10 @@ public class WordsServiceImpl implements WordsService {
     @Transactional
     @Override
     public void removeSynonym(UUID wordId, UUID synonymId) {
+        if (wordId.equals(synonymId)) {
+            throw new IllegalArgumentException("A word cannot be a synonym of itself");
+        }
+
         Words word = wordsRepository.findById(wordId)
                 .orElseThrow(() -> new WordNotFoundException("Word not found"));
  
@@ -176,10 +179,9 @@ public class WordsServiceImpl implements WordsService {
                 !synonym.getOwner().equals(currentUser)) {
             throw new AccessDeniedException("You don't own these words");
         }
- 
-        word.getSynonyms().remove(synonym);
-        synonym.getSynonyms().remove(word);
- 
+
+        unlinkSynonyms(word, synonym);
+        
         wordsRepository.save(word);
         wordsRepository.save(synonym);
     }
@@ -224,5 +226,20 @@ public class WordsServiceImpl implements WordsService {
                 synonymIds,
                 translations
         );
+    }
+
+
+    private void linkSynonyms(Words a, Words b) {
+        if (a.getId().equals(b.getId())) return;
+
+        a.getSynonyms().add(b);
+        b.getSynonyms().add(a);
+    }
+
+    private void unlinkSynonyms(Words a, Words b) {
+        if (a.getId().equals(b.getId())) return;
+
+        a.getSynonyms().remove(b);
+        b.getSynonyms().remove(a);
     }
 }
