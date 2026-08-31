@@ -24,7 +24,7 @@ public class EmailService {
 
         String htmlBody = """
                 <p>Hello, welcome to Recall!</p>
-                <p>Verify your email for get started!</p>
+                <p>Verify your email to get started!</p>
                 <a href="%s">%s</a>
                 """.formatted(link, "Verify Email Address");
 
