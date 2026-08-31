@@ -1,5 +1,14 @@
 package com.dmytro.language_learning_api.service.securityService;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.authentication.AuthResponse;
 import com.dmytro.language_learning_api.dto.authentication.LoginRequest;
@@ -10,13 +19,8 @@ import com.dmytro.language_learning_api.model.Role;
 import com.dmytro.language_learning_api.model.Users;
 import com.dmytro.language_learning_api.repository.UsersRepository;
 import com.dmytro.language_learning_api.security.jwt.JwtService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(UsersDTO dto) {
         String verificationToken = UUID.randomUUID().toString();
+        Instant tokenExpiresAt = Instant.now().plus(Duration.ofHours(2));
 
         Users user = Users.builder()
                 .email(dto.email())
@@ -38,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(Role.USER)
                 .emailVerified(false)
                 .verificationToken(verificationToken)
+                .tokenExpiresAt(tokenExpiresAt)
                 .build();
 
         usersRepository.save(user);
@@ -93,6 +99,7 @@ public class AuthServiceImpl implements AuthService {
         usersRepository.save(user);
 
         emailService.sendVerificationEmail(email, token);
+        user.setTokenExpiresAt(Instant.now().plus(Duration.ofHours(2)));
     }
 
     @Override

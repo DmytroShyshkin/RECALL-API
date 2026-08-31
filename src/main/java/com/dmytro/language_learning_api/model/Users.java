@@ -1,5 +1,6 @@
 package com.dmytro.language_learning_api.model;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
@@ -52,5 +53,9 @@ public class Users {
     @Column(name = "email_verified", nullable = false, columnDefinition = "boolean default false")
     private boolean emailVerified = false;
 
+    @Column(name = "verification_token")
     private String verificationToken;
+
+    @Column(name = "token_expires_at")
+    private Instant tokenExpiresAt;
 }
