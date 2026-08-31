@@ -89,6 +89,7 @@ public class AuthServiceImpl implements AuthService {
 
         String token = UUID.randomUUID().toString();
         user.setVerificationToken(token);
+        user.setTokenExpiresAt(Instant.now().plus(Duration.ofHours(2)));
         usersRepository.save(user);
 
         emailService.sendVerificationEmail(email, token);

@@ -1,41 +1,39 @@
 package com.dmytro.language_learning_api.service.securityService;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.dmytro.language_learning_api.config.email.EmailProperties;
+import com.dmytro.language_learning_api.dto.email.EmailMessage;
+import com.dmytro.language_learning_api.service.mail.EmailSender;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
-    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-    private final JavaMailSender mailSender;
-
-    @Value("${spring.mail.username}")
-    private String from;
-
-    @Value("${app.frontend.url}")
-    private String frontendUrl;
+    private final EmailSender emailSender;
+    
+    private final EmailProperties properties;
 
     public void sendVerificationEmail(String to, String token) {
-        try {
-            String link = frontendUrl + "/verify?token=" + token;
+        
+        String link = properties.getFrontUrl() + "/verify-email?token=" + token;
 
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(from);
-            message.setTo(to);
-            message.setSubject("Verify your email");
-            message.setText("Click the link to verify your email:\n\n" + link);
+        String htmlBody = """
+                <p>Hello, welcome to Recall!</p>
+                <p>Verify your email for get started!</p>
+                <a href="%s">%s</a>
+                """.formatted(link, "Verify Email Address");
 
-            mailSender.send(message);
-            log.info("Verification email sent to {}", to);
-        } catch (Exception e) {
-            log.error("Failed to send verification email to {}: {}", to, e.getMessage());
-        }
+        EmailMessage message = new EmailMessage(
+            to
+            , "Verify your email"
+            , htmlBody
+        );
+
+        emailSender.send(message);
     }
 }
