@@ -124,4 +124,21 @@ public class AuthServiceImpl implements AuthService {
                 user.getUsername()
         );
     }
+
+    @Override
+    public void verifyEmail(String token) {
+        Users user = usersRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new NotFoundException("Invalid verification token."));
+
+        if(user.getTokenExpiresAt().isBefore(Instant.now())) {
+                throw new ConflictException("Verification token has expired.");
+        }
+
+        user.setEmailVerified(true);
+
+        user.setVerificationToken(null);
+        user.setTokenExpiresAt(null);
+
+        usersRepository.save(user);
+    }
 }
