@@ -2,7 +2,6 @@ package com.dmytro.language_learning_api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +13,7 @@ import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.authentication.AuthResponse;
 import com.dmytro.language_learning_api.dto.authentication.LoginRequest;
 import com.dmytro.language_learning_api.dto.authentication.RegisterResponse;
+import com.dmytro.language_learning_api.dto.authentication.ResendVerificationRequest;
 import com.dmytro.language_learning_api.exception.ConflictException.ConflictException;
 import com.dmytro.language_learning_api.repository.UsersRepository;
 import com.dmytro.language_learning_api.security.jwt.JwtService;
@@ -68,8 +68,8 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resendVerification(Authentication authentication) {
-        authService.resendVerificationEmail(authentication.getName());
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        authService.resendVerificationEmail(request.email());
         return ResponseEntity.ok().build();
     }
 

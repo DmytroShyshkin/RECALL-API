@@ -87,19 +87,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void resendVerificationEmail(String email) {
-        Users user = usersRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found."));
-
-        if (user.isEmailVerified()) {
-            throw new ConflictException("Email already verified.");
-        }
-
-        String token = UUID.randomUUID().toString();
-        user.setVerificationToken(token);
-        user.setTokenExpiresAt(Instant.now().plus(Duration.ofHours(2)));
-        usersRepository.save(user);
-
-        emailService.sendVerificationEmail(email, token);
+        usersRepository.findByEmail(email)
+            .filter(user -> !user.isEmailVerified())
+            .ifPresent(user -> {
+                String token = UUID.randomUUID().toString();
+                user.setVerificationToken(token);
+                user.setTokenExpiresAt(Instant.now().plus(Duration.ofHours(2)));
+                usersRepository.save(user);
+                emailService.sendVerificationEmail(email, token);
+            });
     }
 
     @Override
