@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.authentication.AuthResponse;
 import com.dmytro.language_learning_api.dto.authentication.LoginRequest;
+import com.dmytro.language_learning_api.dto.authentication.RegisterResponse;
 import com.dmytro.language_learning_api.exception.ConflictException.ConflictException;
 import com.dmytro.language_learning_api.repository.UsersRepository;
 import com.dmytro.language_learning_api.security.jwt.JwtService;
@@ -35,7 +36,7 @@ public class AuthController {
     private final UsersRepository usersRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody UsersDTO dto) {
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody UsersDTO dto) {
         if (usersRepository.existsByEmail(dto.email())) {
             throw new ConflictException("Email already in use.");
         }

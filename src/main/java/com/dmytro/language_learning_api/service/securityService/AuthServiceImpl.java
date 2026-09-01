@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.authentication.AuthResponse;
 import com.dmytro.language_learning_api.dto.authentication.LoginRequest;
+import com.dmytro.language_learning_api.dto.authentication.RegisterResponse;
 import com.dmytro.language_learning_api.exception.ConflictException.ConflictException;
 import com.dmytro.language_learning_api.exception.NotFoundException.NotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
 
     @Override
-    public AuthResponse register(UsersDTO dto) {
+    public RegisterResponse register(UsersDTO dto) {
         String verificationToken = UUID.randomUUID().toString();
         Instant tokenExpiresAt = Instant.now().plus(Duration.ofHours(2));
 
@@ -50,14 +51,10 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.sendVerificationEmail(user.getEmail(), verificationToken);
 
-        String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole());
-
-        return new AuthResponse(
-                user.getId(),
-                accessToken,
-                null,
-                user.getEmail(),
-                user.getUsername()
+        return new RegisterResponse(
+                user.getEmail()
+                , user.getUsername()
+                , user.getRole()
         );
     }
 
@@ -72,6 +69,10 @@ public class AuthServiceImpl implements AuthService {
 
         Users user = usersRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if(!user.isEmailVerified()) {
+                throw new ConflictException("Email not verified. Please verify your email before logging in.");
+        }
 
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole());
 
@@ -99,7 +100,6 @@ public class AuthServiceImpl implements AuthService {
         usersRepository.save(user);
 
         emailService.sendVerificationEmail(email, token);
-        user.setTokenExpiresAt(Instant.now().plus(Duration.ofHours(2)));
     }
 
     @Override

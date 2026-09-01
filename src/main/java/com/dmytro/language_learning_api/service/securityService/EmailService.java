@@ -1,5 +1,6 @@
 package com.dmytro.language_learning_api.service.securityService;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.dmytro.language_learning_api.config.email.EmailProperties;
@@ -18,6 +19,7 @@ public class EmailService {
     
     private final EmailProperties properties;
 
+    @Async("taskExecutor")
     public void sendVerificationEmail(String to, String token) {
         
         String link = properties.getFrontUrl() + "/verify-email?token=" + token;
