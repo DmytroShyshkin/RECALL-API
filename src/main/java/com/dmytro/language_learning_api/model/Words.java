@@ -31,7 +31,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "words")
-@OnDelete(action = OnDeleteAction.CASCADE)
 @Getter
 @Setter
 @NoArgsConstructor
