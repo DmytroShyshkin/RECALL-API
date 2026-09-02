@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.CascadeType;
@@ -29,6 +31,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "words")
+@OnDelete(action = OnDeleteAction.CASCADE)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -51,6 +54,7 @@ public class Words {
     // Dueño de palabra
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Users owner;
 
     // Lista de traducción (muchos traducciónes — una entidad 'Translation')
@@ -64,7 +68,7 @@ public class Words {
             joinColumns = @JoinColumn(name = "word_id"),
             inverseJoinColumns = @JoinColumn(name = "synonym_id")
     )
-
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Builder.Default
     private Set<Words> synonyms = new HashSet<>();
 }

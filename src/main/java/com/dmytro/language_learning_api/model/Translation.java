@@ -2,6 +2,8 @@ package com.dmytro.language_learning_api.model;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.Column;
@@ -43,6 +45,7 @@ public class Translation {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "word_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Words word;
 
     @Column(nullable = true)
