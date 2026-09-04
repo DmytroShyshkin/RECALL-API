@@ -1,9 +1,7 @@
 package com.dmytro.language_learning_api.security.config;
 
-import com.dmytro.language_learning_api.security.RestAccessDeniedHandler;
-import com.dmytro.language_learning_api.security.RestAuthenticationEntryPoint;
-import com.dmytro.language_learning_api.security.jwt.JwtAuthFilter;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,13 +15,21 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import com.dmytro.language_learning_api.config.CorsProperties;
+import com.dmytro.language_learning_api.security.RestAccessDeniedHandler;
+import com.dmytro.language_learning_api.security.RestAuthenticationEntryPoint;
+import com.dmytro.language_learning_api.security.jwt.JwtAuthFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
+
+    private final CorsProperties corsProperties;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -61,10 +67,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",
-                "https://language-learning-api-qe0e.onrender.com"
-        ));
+        configuration.setAllowedOrigins(
+               corsProperties.getAllowedOrigins()
+        );
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
