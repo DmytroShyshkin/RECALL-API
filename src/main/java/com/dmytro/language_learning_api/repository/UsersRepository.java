@@ -1,5 +1,6 @@
 package com.dmytro.language_learning_api.repository;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,4 +16,6 @@ public interface UsersRepository extends JpaRepository<Users, UUID> {
 
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
+
+    long deleteAllByEmailVerifiedFalseAndCreatedAtBefore(Instant cutoff);
 }
