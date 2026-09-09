@@ -1,6 +1,7 @@
 package com.dmytro.language_learning_api.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +12,8 @@ import com.dmytro.language_learning_api.model.Users;
 public interface UsersRepository extends JpaRepository<Users, UUID> {
     Optional<Users> findByEmail(String email);
     Optional<Users> findByUsername(String username);
+
+    List<String> findAllEmails();
 
     Optional<Users> findByVerificationToken(String token);
 
