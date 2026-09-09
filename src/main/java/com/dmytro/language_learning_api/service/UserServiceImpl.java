@@ -1,15 +1,23 @@
 package com.dmytro.language_learning_api.service;
 
+import java.util.List;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.requests.getRequests.GetUserDataDTO;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
+import com.dmytro.language_learning_api.event.UserDeletedDomainEvent;
 import com.dmytro.language_learning_api.exception.ConflictException.ConflictException;
 import com.dmytro.language_learning_api.exception.ConflictException.EmailAlreadyExistsException;
 import com.dmytro.language_learning_api.exception.ConflictException.UsernameAlreadyExistsException;
 import com.dmytro.language_learning_api.exception.NotFoundException.NotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
-import com.dmytro.language_learning_api.kafka.producer.userDelete.UserDeleteEvent;
-import com.dmytro.language_learning_api.kafka.producer.userDelete.UserDeleteProducer;
 import com.dmytro.language_learning_api.mapper.UsersMapper;
 import com.dmytro.language_learning_api.model.Users;
 import com.dmytro.language_learning_api.repository.UsersRepository;
@@ -17,15 +25,9 @@ import com.dmytro.language_learning_api.repository.WordsRepository;
 import com.dmytro.language_learning_api.repository.statistics.UserActivityRepository;
 import com.dmytro.language_learning_api.repository.statistics.WordReviewLogRepository;
 import com.dmytro.language_learning_api.repository.statistics.WordStatisticsRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +39,7 @@ public class UserServiceImpl implements UserService {
     private final WordReviewLogRepository  wordReviewLogRepository;
     private final WordStatisticsRepository wordStatisticsRepository;
 
-    // Kafka
-    private final UserDeleteProducer producer;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final UsersMapper usersMapper;
     private final PasswordEncoder passwordEncoder;
@@ -137,7 +138,7 @@ public class UserServiceImpl implements UserService {
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found."));
 
-        producer.sendDeletedUserEvent(new UserDeleteEvent(email));
+        eventPublisher.publishEvent(new UserDeletedDomainEvent(email));
 
         wordStatisticsRepository.deleteByUserId(user.getId());
         wordReviewLogRepository.deleteByUserId(user.getId());
