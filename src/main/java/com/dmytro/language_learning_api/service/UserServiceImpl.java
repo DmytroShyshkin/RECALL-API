@@ -1,17 +1,11 @@
 package com.dmytro.language_learning_api.service;
 
-import java.util.List;
-
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.requests.getRequests.GetUserDataDTO;
-import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.event.UserDeletedDomainEvent;
 import com.dmytro.language_learning_api.exception.ConflictException.ConflictException;
 import com.dmytro.language_learning_api.exception.ConflictException.EmailAlreadyExistsException;
@@ -45,48 +39,12 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public PageResponse<UsersDTO> getAllUsers(int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<Users> usersPage = usersRepository.findAll(pageable);
-        List<Users> users = usersPage.getContent();
-        List<UsersDTO>usersList = users.stream().map(usersMapper::toDto).toList();
-
-        PageResponse<UsersDTO> userRespons = new PageResponse<>();
-        userRespons.setContent(usersList);
-        userRespons.setPageNo(usersPage.getNumber());
-        userRespons.setPageSize(usersPage.getSize());
-        userRespons.setTotalPages(usersPage.getTotalPages());
-        userRespons.setTotalElements(usersPage.getTotalElements());
-        userRespons.setLast(usersPage.isLast());
-
-        return userRespons;
-    }
-
-    @Override
     public GetUserDataDTO getUserByEmail(String email) {
         Users user = getUserOrThrow(email);
 
 
         return new GetUserDataDTO(user.getUsername(), user.getEmail());
         //return usersMapper.toDto(user);
-    }
-
-    @Override
-    public UsersDTO createUser(UsersDTO dto) {
-
-        if (usersRepository.existsByEmail(dto.email())) {
-            throw new EmailAlreadyExistsException(dto.email());
-        }
-
-        if (usersRepository.existsByUsername(dto.username())) {
-            throw new UsernameAlreadyExistsException(dto.username());
-        }
-
-        Users user = usersMapper.fromDto(dto);
-
-        Users savedUser = usersRepository.save(user);
-
-        return usersMapper.toDto(savedUser);
     }
 
     @Override

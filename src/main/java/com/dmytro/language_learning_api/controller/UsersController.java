@@ -2,12 +2,12 @@ package com.dmytro.language_learning_api.controller;
 
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.requests.getRequests.GetUserDataDTO;
-import com.dmytro.language_learning_api.dto.response.PageResponse;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateEmailRequestDTO;
 import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdatePasswordRequestDTO;
+import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateUsernameRequestDTO;
 import com.dmytro.language_learning_api.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -21,14 +21,6 @@ public class UsersController {
 
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<PageResponse<UsersDTO>> getAllUsers(
-            @RequestParam(defaultValue = "0", required = false)int pageNo,
-            @RequestParam(defaultValue = "10", required = false)int pageSize
-    ) {
-        return new ResponseEntity<>(userService.getAllUsers(pageNo, pageSize), HttpStatus.OK);
-    }
-
     @GetMapping("/me")
     public ResponseEntity<GetUserDataDTO> getUserByEmail(
             Authentication authentication
@@ -36,29 +28,20 @@ public class UsersController {
         return ResponseEntity.ok(userService.getUserByEmail(authentication.getName()));
     }
 
-    @PutMapping
-    public ResponseEntity<UsersDTO> createUser(@Valid @RequestBody UsersDTO userDTO) {
-        UsersDTO createdUser = userService.createUser(userDTO);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdUser);
-    }
-
     @PutMapping("/me/email")
     public ResponseEntity<UsersDTO> updateEmail(
-            @RequestBody String newEmail
+            @Valid @RequestBody UpdateEmailRequestDTO request
             , Authentication authentication)
     {
-        return ResponseEntity.ok(userService.updateEmail(authentication.getName(), newEmail));
+        return ResponseEntity.ok(userService.updateEmail(authentication.getName(), request.email()));
     }
 
     @PutMapping("/me/username")
     public ResponseEntity<UsersDTO> updateUsername(
-            @RequestBody String newUsername
+            @Valid @RequestBody UpdateUsernameRequestDTO request
             , Authentication authentication)
     {
-        return ResponseEntity.ok(userService.updateUsernameByEmail(authentication.getName(), newUsername));
+        return ResponseEntity.ok(userService.updateUsernameByEmail(authentication.getName(), request.username()));
     }
 
     @PutMapping("/me/password")
