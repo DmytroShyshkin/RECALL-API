@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,10 +20,9 @@ import com.dmytro.language_learning_api.dto.WordsDTO;
 import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
 import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
+import com.dmytro.language_learning_api.event.WordDeletedDomainEvent;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
-import com.dmytro.language_learning_api.kafka.producer.word.WordDeletedEvent;
-import com.dmytro.language_learning_api.kafka.producer.word.WordDeletedProducer;
 import com.dmytro.language_learning_api.kafka.producer.word.WordUpsertedProducer;
 import com.dmytro.language_learning_api.mapper.TranslationMapper;
 import com.dmytro.language_learning_api.mapper.WordUpsertedEventMapper;
@@ -51,8 +51,8 @@ public class WordsServiceImpl implements WordsService {
     private final WordStatisticsRepository wordStatisticsRepository;
  
     // Kafka
-    private final WordDeletedProducer producer;
     private final WordUpsertedProducer wordUpsertedProducer;
+    private final ApplicationEventPublisher eventPublisher;
  
     // Security helper
     private final JwtUtil jwtUtil;
@@ -199,7 +199,7 @@ public class WordsServiceImpl implements WordsService {
     @Transactional
     public void deleteWord(UUID wordId) {
         Words word = getWordOrThrow(wordId);
-        producer.sendDeletedWordEvent(new WordDeletedEvent(wordId, word.getOwner().getEmail()));
+        eventPublisher.publishEvent(new WordDeletedDomainEvent(wordId, word.getOwner().getEmail()));
         wordStatisticsRepository.deleteByWordId(wordId);
         wordsRepository.delete(word);
     }

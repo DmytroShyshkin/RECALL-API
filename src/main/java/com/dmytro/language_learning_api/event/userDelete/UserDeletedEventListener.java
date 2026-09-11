@@ -1,4 +1,4 @@
-package com.dmytro.language_learning_api.event.userDelate;
+package com.dmytro.language_learning_api.event.userDelete;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
