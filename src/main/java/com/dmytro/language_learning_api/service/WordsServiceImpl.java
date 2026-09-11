@@ -23,7 +23,9 @@ import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFound
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
 import com.dmytro.language_learning_api.kafka.producer.word.WordDeletedEvent;
 import com.dmytro.language_learning_api.kafka.producer.word.WordDeletedProducer;
+import com.dmytro.language_learning_api.kafka.producer.word.WordUpsertedProducer;
 import com.dmytro.language_learning_api.mapper.TranslationMapper;
+import com.dmytro.language_learning_api.mapper.WordUpsertedEventMapper;
 import com.dmytro.language_learning_api.mapper.WordsMapper;
 import com.dmytro.language_learning_api.model.Translation;
 import com.dmytro.language_learning_api.model.Users;
@@ -42,6 +44,7 @@ public class WordsServiceImpl implements WordsService {
     // Mappers
     private final WordsMapper wordsMapper;
     private final TranslationMapper translationMapper;
+    private final WordUpsertedEventMapper wordUpsertedEventMapper;
     // Repository
     private final WordsRepository wordsRepository;
     private final UsersRepository usersRepository;
@@ -49,6 +52,7 @@ public class WordsServiceImpl implements WordsService {
  
     // Kafka
     private final WordDeletedProducer producer;
+    private final WordUpsertedProducer wordUpsertedProducer;
  
     // Security helper
     private final JwtUtil jwtUtil;
@@ -67,7 +71,10 @@ public class WordsServiceImpl implements WordsService {
         word.setSourceLanguage(request.sourceLanguage());
         word.setOwner(user);
  
-        return wordsMapper.toDto(wordsRepository.save(word));
+        Words savedWord = wordsRepository.save(word);
+        wordUpsertedProducer.sendWordUpsertedEvent(wordUpsertedEventMapper.toEvent(savedWord));
+
+        return wordsMapper.toDto(savedWord);
     }
  
     @Transactional(readOnly = true)
@@ -91,9 +98,10 @@ public class WordsServiceImpl implements WordsService {
             word.setOriginalWord(updateWordRequest.originalWord());
         }
  
-        wordsRepository.save(word);
- 
-        return wordsMapper.toDto(word);
+        Words savedWord = wordsRepository.save(word);
+        wordUpsertedProducer.sendWordUpsertedEvent(wordUpsertedEventMapper.toEvent(savedWord));
+
+        return wordsMapper.toDto(savedWord);
     }
  
     @Override
@@ -130,7 +138,8 @@ public class WordsServiceImpl implements WordsService {
  
         word.getTranslations().add(translation);
         Words savedWord = wordsRepository.save(word);
- 
+        wordUpsertedProducer.sendWordUpsertedEvent(wordUpsertedEventMapper.toEvent(savedWord));
+
         return wordsMapper.toDto(savedWord);
     }
  

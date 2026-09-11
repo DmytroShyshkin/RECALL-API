@@ -1,17 +1,24 @@
 package com.dmytro.language_learning_api.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.dmytro.language_learning_api.dto.UsersDTO;
 import com.dmytro.language_learning_api.dto.requests.getRequests.GetUserDataDTO;
 import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateEmailRequestDTO;
 import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdatePasswordRequestDTO;
 import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateUsernameRequestDTO;
 import com.dmytro.language_learning_api.service.UserService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -46,13 +53,13 @@ public class UsersController {
 
     @PutMapping("/me/password")
     public ResponseEntity<Void> updatePassword(
-            @RequestBody UpdatePasswordRequestDTO passwordRequest
-            , Authentication authentication)
+        @Valid @RequestBody UpdatePasswordRequestDTO passwordRequest
+        , Authentication authentication)
     {
         userService.updatePasswordByEmail(
-                authentication.getName()
-                , passwordRequest.oldPassword()
-                , passwordRequest.newPassword()
+            authentication.getName()
+            , passwordRequest.oldPassword()
+            , passwordRequest.newPassword()
         );
 
         return ResponseEntity.noContent().build();
