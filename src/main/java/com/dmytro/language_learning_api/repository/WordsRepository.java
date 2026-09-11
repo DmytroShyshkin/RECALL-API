@@ -19,6 +19,8 @@ public interface WordsRepository extends JpaRepository<Words, UUID> {
        """)
     Page<Words> findByOwnerId(UUID ownerId, Pageable pageable);
 
+    Optional<Words> findByIdAndOwnerId(UUID id, UUID ownerId);
+
     void deleteByOwnerId(UUID ownerId);
 
     @Query("""

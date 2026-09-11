@@ -19,6 +19,7 @@ import com.dmytro.language_learning_api.model.Translation;
 import com.dmytro.language_learning_api.model.Words;
 import com.dmytro.language_learning_api.repository.TranslationRepository;
 import com.dmytro.language_learning_api.repository.WordsRepository;
+import com.dmytro.language_learning_api.security.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,12 +32,15 @@ public class TranslationServiceImpl implements TranslationService {
     private final WordsRepository wordsRepository;
     private final WordUpsertedProducer wordUpsertedProducer;
     private final WordUpsertedEventMapper wordUpsertedEventMapper;
+    private final JwtUtil jwtUtil;
 
     @Override
     public PageResponse<TranslationDTO> getTranslationsByWordId(UUID wordId, int pageNo, int pageSize) {
+        UUID ownerId = jwtUtil.getCurrentUser().getId();
+        
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<Translation> translationsPage =
-                translationRepository.findByWordId(wordId, pageable);
+                translationRepository.findByWordIdAndWordOwnerId(wordId, ownerId, pageable);
         List<Translation> translation = translationsPage.getContent();
         if (translation.isEmpty()) {
             throw new TranslationNotFoundException("Translations not found for word id: " + wordId);
@@ -56,7 +60,9 @@ public class TranslationServiceImpl implements TranslationService {
 
     @Override
     public TranslationDTO addTranslation(UUID wordId, TranslationDTO translationDto) {
-        Words word = wordsRepository.findById(wordId)
+        UUID ownerId = jwtUtil.getCurrentUser().getId();
+
+        Words word = wordsRepository.findByIdAndOwnerId(wordId, ownerId)
                 .orElseThrow(() -> new WordNotFoundException("Word not found"));
 
         Translation translation = translationMapper.fromDto(translationDto);
@@ -98,7 +104,9 @@ public class TranslationServiceImpl implements TranslationService {
 
     // Clases auxiliares
     private Translation getTranslationOrThrow(UUID translationId) {
-        return translationRepository.findById(translationId)
+        UUID ownerId = jwtUtil.getCurrentUser().getId();
+
+        return translationRepository.findByIdAndWordOwnerId(translationId, ownerId)
                 .orElseThrow(() -> new TranslationNotFoundException("Translationwith id " + translationId + " not found"));
     }
 
