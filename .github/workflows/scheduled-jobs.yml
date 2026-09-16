@@ -1,0 +1,50 @@
+name: Scheduled internal jobs
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 * * *'   # UnverifiedAccountsCleanupJob
+    - cron: '0 3 * * *'   # UserSnapshotPublishJob
+    - cron: '30 3 * * *'  # WordSnapshotPublishJob
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call matching internal endpoint
+        env:
+          BASE_URL: ${{ secrets.RENDER_APP_URL }}
+          SECRET: ${{ secrets.INTERNAL_JOBS_SECRET }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+
+          call() {
+            local path="$1"
+            echo "Calling /internal/jobs/$path"
+            curl --fail --silent --show-error \
+              --retry 5 --retry-delay 10 --retry-all-errors \
+              --max-time 60 \
+              -X POST \
+              -H "X-Internal-Job-Secret: $SECRET" \
+              "$BASE_URL/internal/jobs/$path"
+            echo
+          }
+
+          case "$SCHEDULE" in
+            '0 0 * * *')
+              call "cleanup-unverified-accounts"
+              ;;
+            '0 3 * * *')
+              call "publish-user-snapshot"
+              ;;
+            '30 3 * * *')
+              call "publish-word-snapshot"
+              ;;
+            *)
+              echo "Manual run (workflow_dispatch) or unrecognized schedule '$SCHEDULE' — calling all three jobs"
+              call "cleanup-unverified-accounts"
+              call "publish-user-snapshot"
+              call "publish-word-snapshot"
+              ;;
+          esac
