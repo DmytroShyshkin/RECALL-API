@@ -18,7 +18,7 @@ jobs:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-
+          echo "BASE_URL length: ${#BASE_URL}"
           call() {
             local path="$1"
             echo "Calling /internal/jobs/$path"
