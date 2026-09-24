@@ -23,7 +23,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "translations",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"word_id", "target_language", "text"})}
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"word_id", "target_language", "translated_word"})}
 )
 @Getter
 @Setter
@@ -48,7 +48,14 @@ public class Translation {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Words word;
 
-    @Column(nullable = true)
+    // No fixed length here on purpose — this is a free-text note field, and a
+    // plain @Column(nullable = true) defaults to varchar(255) in Postgres,
+    // which is easy to exceed by accident. columnDefinition = "TEXT" removes
+    // the limit at the DB level (paired with the @Size check on the DTO,
+    // which now rejects an oversized value with a clean 400 instead of this
+    // silently succeeding past validation and blowing up as an unhandled
+    // DataIntegrityViolationException on the INSERT).
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String description;
 
     // recurso (user/manual, deepl, openai)

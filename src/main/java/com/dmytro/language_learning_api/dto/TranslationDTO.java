@@ -18,6 +18,7 @@ public record TranslationDTO(
         @Size(min = 1, max = 200, message = "Translation must be between 1 and 200 characters")
         String translatedWord,
 
+        @Size(max = 2000, message = "Description must be at most 2000 characters")
         String description
         ) {
 }
