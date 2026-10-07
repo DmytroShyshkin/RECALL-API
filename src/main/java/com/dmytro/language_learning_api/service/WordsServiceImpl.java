@@ -23,6 +23,8 @@ import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.event.WordDeletedDomainEvent;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
+import com.dmytro.language_learning_api.kafka.producer.word.WordEnrichmentRequestedEvent;
+import com.dmytro.language_learning_api.kafka.producer.word.WordEnrichmentRequestedProducer;
 import com.dmytro.language_learning_api.kafka.producer.word.WordUpsertedProducer;
 import com.dmytro.language_learning_api.mapper.TranslationMapper;
 import com.dmytro.language_learning_api.mapper.WordUpsertedEventMapper;
@@ -52,6 +54,7 @@ public class WordsServiceImpl implements WordsService {
 
     // Kafka
     private final WordUpsertedProducer wordUpsertedProducer;
+    private final WordEnrichmentRequestedProducer wordEnrichmentRequestedProducer;
     private final ApplicationEventPublisher eventPublisher;
 
     // Security helper
@@ -102,6 +105,36 @@ public class WordsServiceImpl implements WordsService {
         wordUpsertedProducer.sendWordUpsertedEvent(wordUpsertedEventMapper.toEvent(savedWord));
 
         return wordsMapper.toDto(savedWord);
+    }
+
+    @Override
+    public void enrichWord(UUID wordId, String targetLanguage) {
+        Words word = getWordOrThrow(wordId);
+
+        Users currentUser = jwtUtil.getCurrentUser();
+        if (!word.getOwner().equals(currentUser)) {
+            throw new AccessDeniedException("You don't own this word");
+        }
+
+        Translation translation = word.getTranslations().stream()
+                .filter(t -> t.getTargetLanguage().equals(targetLanguage))
+                .findFirst()
+                .orElseThrow(() -> new WordNotFoundException(
+                        "No translation to '" + targetLanguage + "' for this word"));
+
+        WordEnrichmentRequestedEvent event = new WordEnrichmentRequestedEvent(
+                word.getId(),
+                word.getSourceLanguage(),
+                word.getOriginalWord(),
+                List.of(new WordEnrichmentRequestedEvent.Translations(
+                        translation.getId(),
+                        translation.getTargetLanguage(),
+                        translation.getTranslatedWord(),
+                        translation.getDescription()
+                ))
+        );
+
+        wordEnrichmentRequestedProducer.sendWordEnrichmentRequestedEvent(event);
     }
 
     @Override
@@ -164,7 +197,7 @@ public class WordsServiceImpl implements WordsService {
         }
 
         linkSynonyms(word, synonym);
-        
+
         wordsRepository.save(word);
         wordsRepository.save(synonym);
     }
@@ -190,7 +223,7 @@ public class WordsServiceImpl implements WordsService {
         }
 
         unlinkSynonyms(word, synonym);
-        
+
         wordsRepository.save(word);
         wordsRepository.save(synonym);
     }

@@ -34,13 +34,13 @@ import lombok.AllArgsConstructor;
 public class WordsController {
 
     public final WordsService wordsService;
- 
+
     @Transactional(readOnly = true)
     @GetMapping("/{wordId}")
     public ResponseEntity<WordsDTO> getWordsById(@PathVariable UUID wordId) {
         return ResponseEntity.ok(wordsService.getWordById(wordId));
     }
- 
+
     @GetMapping("/user")
     public ResponseEntity<PageResponse<WordsDTO>> getAllWordsByOwnerEmail(
             Authentication authentication,
@@ -57,7 +57,7 @@ public class WordsController {
                 , HttpStatus.OK
         );
     }
- 
+
     @PostMapping
     public ResponseEntity<WordsDTO> createWord(@Valid @RequestBody CreateWordRequestDTO request) {
         return ResponseEntity
@@ -65,7 +65,7 @@ public class WordsController {
                 .body(wordsService.createWord(request)
                 );
     }
- 
+
     @PutMapping("/update-word/{wordId}")
     public ResponseEntity<WordsDTO> updateOriginalWordById(
             @PathVariable UUID wordId,
@@ -73,7 +73,16 @@ public class WordsController {
     ) {
         return ResponseEntity.ok(wordsService.updateWord(wordId, updateWordRequest));
     }
- 
+
+    @PostMapping("/{wordId}/enrich")
+    public ResponseEntity<Void> enrichWord(
+            @PathVariable UUID wordId,
+            @RequestParam String targetLanguage
+    ) {
+        wordsService.enrichWord(wordId, targetLanguage);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/add-translation-to-word/{wordId}")
     public ResponseEntity<WordsDTO> addTranslationToWordById(
             @PathVariable UUID wordId,
@@ -81,7 +90,7 @@ public class WordsController {
     ) {
         return  ResponseEntity.ok(wordsService.addTranslationToWord(wordId, translationDto));
     }
- 
+
     @PostMapping("/{wordId}/synonyms/{synonymId}")
     public ResponseEntity<Void> addSynonym(
             @PathVariable UUID wordId,
@@ -90,7 +99,7 @@ public class WordsController {
         wordsService.addSynonym(wordId, synonymId);
         return ResponseEntity.noContent().build();
     }
- 
+
     @DeleteMapping("/{wordId}/synonyms/{synonymId}")
     public ResponseEntity<Void> removeSynonym(
             @PathVariable UUID wordId,
@@ -99,7 +108,7 @@ public class WordsController {
         wordsService.removeSynonym(wordId, synonymId);
         return ResponseEntity.noContent().build();
     }
- 
+
     @DeleteMapping("/delete-word/{wordId}")
     public ResponseEntity<Void> deleteWordById(@PathVariable UUID wordId) {
         wordsService.deleteWord(wordId);
