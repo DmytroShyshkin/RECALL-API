@@ -14,17 +14,19 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
+import com.dmytro.language_learning_api.config.EnrichmentServiceClientConfig;
 import com.dmytro.language_learning_api.dto.TranslationDTO;
 import com.dmytro.language_learning_api.dto.WordsDTO;
+import com.dmytro.language_learning_api.dto.requests.EnrichmentRequest;
 import com.dmytro.language_learning_api.dto.requests.createRequests.CreateWordRequestDTO;
 import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRequest;
+import com.dmytro.language_learning_api.dto.response.EnrichmentResponse;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.event.WordDeletedDomainEvent;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
-import com.dmytro.language_learning_api.kafka.producer.word.WordEnrichmentRequestedEvent;
-import com.dmytro.language_learning_api.kafka.producer.word.WordEnrichmentRequestedProducer;
 import com.dmytro.language_learning_api.kafka.producer.word.WordUpsertedProducer;
 import com.dmytro.language_learning_api.mapper.TranslationMapper;
 import com.dmytro.language_learning_api.mapper.WordUpsertedEventMapper;
@@ -52,9 +54,13 @@ public class WordsServiceImpl implements WordsService {
     private final UsersRepository usersRepository;
     private final WordStatisticsRepository wordStatisticsRepository;
 
+    // Enrichment service client config
+    private final EnrichmentServiceClientConfig enrichmentServiceClientConfig;
+    // field name matches the @Bean method name, so Spring resolves it by type + name
+    private final RestClient enrichmentServiceRestClient;
+
     // Kafka
     private final WordUpsertedProducer wordUpsertedProducer;
-    private final WordEnrichmentRequestedProducer wordEnrichmentRequestedProducer;
     private final ApplicationEventPublisher eventPublisher;
 
     // Security helper
@@ -122,19 +128,21 @@ public class WordsServiceImpl implements WordsService {
                 .orElseThrow(() -> new WordNotFoundException(
                         "No translation to '" + targetLanguage + "' for this word"));
 
-        WordEnrichmentRequestedEvent event = new WordEnrichmentRequestedEvent(
-                word.getId(),
-                word.getSourceLanguage(),
+        EnrichmentRequest enrichmentRequest = new EnrichmentRequest(
                 word.getOriginalWord(),
-                List.of(new WordEnrichmentRequestedEvent.Translations(
-                        translation.getId(),
-                        translation.getTargetLanguage(),
-                        translation.getTranslatedWord(),
-                        translation.getDescription()
-                ))
+                word.getSourceLanguage(),
+                targetLanguage
         );
 
-        wordEnrichmentRequestedProducer.sendWordEnrichmentRequestedEvent(event);
+        EnrichmentResponse response = enrichmentServiceRestClient
+            .post()
+            .uri("/enrich")
+            .body(enrichmentRequest)
+            .retrieve()
+            .body(EnrichmentResponse.class);
+
+        translation.setDescription(response.description());
+        saveAndPublishUpdate(word);
     }
 
     @Override
@@ -283,5 +291,10 @@ public class WordsServiceImpl implements WordsService {
 
         a.getSynonyms().remove(b);
         b.getSynonyms().remove(a);
+    }
+
+    private void saveAndPublishUpdate(Words word) {
+        wordsRepository.save(word);
+        wordUpsertedProducer.sendWordUpsertedEvent(wordUpsertedEventMapper.toEvent(word));
     }
 }
