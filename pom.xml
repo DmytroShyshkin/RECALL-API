@@ -58,6 +58,15 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<!-- RestClient.Builder auto-configuration lives in this module in Boot 4;
+		     spring-boot-starter-webmvc-test pulls it in transitively but only on
+		     the TEST classpath, so without this it's missing at runtime.
+		     See: https://github.com/spring-projects/spring-boot/issues/48253 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
+		</dependency>
+
 		<!-- Security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
