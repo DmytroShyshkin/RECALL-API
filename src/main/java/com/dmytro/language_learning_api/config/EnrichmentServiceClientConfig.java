@@ -9,7 +9,10 @@ import org.springframework.http.MediaType;
 
 @Configuration 
 public class EnrichmentServiceClientConfig {
-    @Value("${enrichment-service.base-url}")
+    // Default keeps the app bootable even when the env var isn't set yet
+    // (e.g. before the enrichment service has a real deployed address) —
+    // only the /enrich call itself would fail, not the whole context.
+    @Value("${enrichment-service.base-url:http://localhost:8000}")
     private String baseUrl;
 
     @Bean
