@@ -113,6 +113,7 @@ public class WordsServiceImpl implements WordsService {
         return wordsMapper.toDto(savedWord);
     }
 
+    @Transactional
     @Override
     public void enrichWord(UUID wordId, String targetLanguage) {
         Words word = getWordOrThrow(wordId);
