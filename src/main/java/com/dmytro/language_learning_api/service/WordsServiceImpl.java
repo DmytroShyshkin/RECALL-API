@@ -126,8 +126,14 @@ public class WordsServiceImpl implements WordsService {
         Translation translation = word.getTranslations().stream()
                 .filter(t -> t.getTargetLanguage().equals(targetLanguage))
                 .findFirst()
-                .orElseThrow(() -> new WordNotFoundException(
-                        "No translation to '" + targetLanguage + "' for this word"));
+                .orElseGet(() -> {
+                    Translation newTranslation = new Translation();
+                    newTranslation.setTargetLanguage(targetLanguage);
+                    newTranslation.setWord(word);
+                    newTranslation.setSource("ai");
+                    word.getTranslations().add(newTranslation);
+                    return newTranslation;
+                });
 
         EnrichmentRequest enrichmentRequest = new EnrichmentRequest(
                 word.getOriginalWord(),
@@ -142,6 +148,7 @@ public class WordsServiceImpl implements WordsService {
             .retrieve()
             .body(EnrichmentResponse.class);
 
+        translation.setTranslatedWord(response.translation());
         translation.setDescription(response.description());
         saveAndPublishUpdate(word);
     }
