@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
-import com.dmytro.language_learning_api.config.EnrichmentServiceClientConfig;
 import com.dmytro.language_learning_api.dto.TranslationDTO;
 import com.dmytro.language_learning_api.dto.WordsDTO;
 import com.dmytro.language_learning_api.dto.requests.EnrichmentRequest;
@@ -54,8 +53,6 @@ public class WordsServiceImpl implements WordsService {
     private final UsersRepository usersRepository;
     private final WordStatisticsRepository wordStatisticsRepository;
 
-    // Enrichment service client config
-    private final EnrichmentServiceClientConfig enrichmentServiceClientConfig;
     // field name matches the @Bean method name, so Spring resolves it by type + name
     private final RestClient enrichmentServiceRestClient;
 
