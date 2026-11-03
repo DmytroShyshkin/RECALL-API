@@ -10,7 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.HttpClientSettings;
 
 @Configuration 
 public class EnrichmentServiceClientConfig {
@@ -28,9 +28,8 @@ public class EnrichmentServiceClientConfig {
 
     @Bean
     public RestClient enrichmentServiceRestClient(RestClient.Builder builder) {
-        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
-            .withConnectTimeout(Duration.ofMillis(connectTimeout))
-            .withReadTimeout(Duration.ofMillis(readTimeout));
+        HttpClientSettings settings = HttpClientSettings.defaults()
+            .withTimeouts(Duration.ofMillis(connectTimeout), Duration.ofMillis(readTimeout));
 
         ClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.detect().build(settings);
 
