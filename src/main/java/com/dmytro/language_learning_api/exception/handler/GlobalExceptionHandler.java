@@ -4,6 +4,9 @@ import com.dmytro.language_learning_api.dto.error.ErrorResponse;
 import com.dmytro.language_learning_api.dto.error.FieldValidationError;
 import com.dmytro.language_learning_api.dto.error.ValidationErrorResponse;
 import com.dmytro.language_learning_api.exception.ConflictException.ConflictException;
+import com.dmytro.language_learning_api.exception.EnrichmentException.EnrichmentServiceRateLimitedException;
+import com.dmytro.language_learning_api.exception.EnrichmentException.EnrichmentServiceTimeoutException;
+import com.dmytro.language_learning_api.exception.EnrichmentException.EnrichmentServiceUnavailableException;
 import com.dmytro.language_learning_api.exception.NotFoundException.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -139,6 +142,60 @@ public class GlobalExceptionHandler {
 
         log.warn("Conflict: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    // Error type: 429 Enrichment service rate limited (Groq free-tier RPM/RPD exceeded)
+    @ExceptionHandler(EnrichmentServiceRateLimitedException.class)
+    public ResponseEntity<ErrorResponse> handleEnrichmentRateLimited(
+            EnrichmentServiceRateLimitedException ex,
+            HttpServletRequest req
+    ) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+                ex.getMessage(),
+                req.getRequestURI()
+        );
+
+        log.warn("Enrichment service rate limited: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+    }
+
+    // Error type: 503 Enrichment service unavailable (Python service down / unreachable / 503 from Groq connection issues)
+    @ExceptionHandler(EnrichmentServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleEnrichmentUnavailable(
+            EnrichmentServiceUnavailableException ex,
+            HttpServletRequest req
+    ) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(),
+                ex.getMessage(),
+                req.getRequestURI()
+        );
+
+        log.error("Enrichment service unavailable: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
+    // Error type: 504 Enrichment service timeout (no response within connect/read timeout)
+    @ExceptionHandler(EnrichmentServiceTimeoutException.class)
+    public ResponseEntity<ErrorResponse> handleEnrichmentTimeout(
+            EnrichmentServiceTimeoutException ex,
+            HttpServletRequest req
+    ) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.GATEWAY_TIMEOUT.value(),
+                HttpStatus.GATEWAY_TIMEOUT.getReasonPhrase(),
+                ex.getMessage(),
+                req.getRequestURI()
+        );
+
+        log.error("Enrichment service timed out: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(errorResponse);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

@@ -1,5 +1,6 @@
 package com.dmytro.language_learning_api.service;
 
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 import com.dmytro.language_learning_api.dto.TranslationDTO;
@@ -24,6 +26,9 @@ import com.dmytro.language_learning_api.dto.requests.updateRequests.UpdateWordRe
 import com.dmytro.language_learning_api.dto.response.EnrichmentResponse;
 import com.dmytro.language_learning_api.dto.response.PageResponse;
 import com.dmytro.language_learning_api.event.WordDeletedDomainEvent;
+import com.dmytro.language_learning_api.exception.EnrichmentException.EnrichmentServiceRateLimitedException;
+import com.dmytro.language_learning_api.exception.EnrichmentException.EnrichmentServiceTimeoutException;
+import com.dmytro.language_learning_api.exception.EnrichmentException.EnrichmentServiceUnavailableException;
 import com.dmytro.language_learning_api.exception.NotFoundException.UserNotFoundException;
 import com.dmytro.language_learning_api.exception.NotFoundException.WordNotFoundException;
 import com.dmytro.language_learning_api.kafka.producer.word.WordUpsertedProducer;
@@ -138,12 +143,26 @@ public class WordsServiceImpl implements WordsService {
                 targetLanguage
         );
 
-        EnrichmentResponse response = enrichmentServiceRestClient
-            .post()
-            .uri("/enrich")
-            .body(enrichmentRequest)
-            .retrieve()
-            .body(EnrichmentResponse.class);
+        EnrichmentResponse response;
+        try {
+            response = enrichmentServiceRestClient
+                .post()
+                .uri("/enrich")
+                .body(enrichmentRequest)
+                .retrieve()
+                .onStatus(status -> status.value() == 429, (request, httpResponse) -> {
+                    throw new EnrichmentServiceRateLimitedException();
+                })
+                .onStatus(status -> status.value() == 503, (request, httpResponse) -> {
+                    throw new EnrichmentServiceUnavailableException();
+                })
+                .body(EnrichmentResponse.class);
+        } catch (ResourceAccessException ex) {
+            if (ex.getCause() instanceof SocketTimeoutException) {
+                throw new EnrichmentServiceTimeoutException();
+            }
+            throw new EnrichmentServiceUnavailableException();
+        }
 
         translation.setTranslatedWord(response.translation());
         translation.setDescription(response.description());
