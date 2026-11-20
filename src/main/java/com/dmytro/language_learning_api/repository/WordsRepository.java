@@ -1,5 +1,6 @@
 package com.dmytro.language_learning_api.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,4 +41,7 @@ public interface WordsRepository extends JpaRepository<Words, UUID> {
        """,
        countQuery = "SELECT COUNT(w) FROM Words w")
     Page<Words> findAllWithTranslations(Pageable pageable);
+
+    @Query("SELECT w.id FROM Words w")
+    List<UUID> findAllIds();
 }
