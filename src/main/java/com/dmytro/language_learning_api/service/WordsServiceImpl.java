@@ -11,7 +11,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,13 +90,13 @@ public class WordsServiceImpl implements WordsService {
     @Transactional(readOnly = true)
     @Override
     public WordsDTO getWordById(UUID wordId) {
-        Words word = getWordOrThrow(wordId);
+        Words word = getWordOrThrow(wordId, jwtUtil.getCurrentUser().getId());
         return toFullDto(word);
     }
 
     @Override
     public WordsDTO updateWord(UUID wordId, UpdateWordRequest updateWordRequest) {
-        Words word = getWordOrThrow(wordId);
+        Words word = getWordOrThrow(wordId, jwtUtil.getCurrentUser().getId());
 
         if (updateWordRequest.sourceLanguage() != null && !updateWordRequest.sourceLanguage().isBlank()
                 && !updateWordRequest.sourceLanguage().equals(word.getSourceLanguage())) {
@@ -118,12 +117,7 @@ public class WordsServiceImpl implements WordsService {
     @Transactional
     @Override
     public void enrichWord(UUID wordId, String targetLanguage) {
-        Words word = getWordOrThrow(wordId);
-
-        Users currentUser = jwtUtil.getCurrentUser();
-        if (!word.getOwner().equals(currentUser)) {
-            throw new AccessDeniedException("You don't own this word");
-        }
+        Words word = getWordOrThrow(wordId, jwtUtil.getCurrentUser().getId());
 
         Translation translation = word.getTranslations().stream()
                 .filter(t -> t.getTargetLanguage().equals(targetLanguage))
@@ -196,7 +190,7 @@ public class WordsServiceImpl implements WordsService {
 
     @Override
     public WordsDTO addTranslationToWord(UUID wordId, TranslationDTO translationDto) {
-        Words word = getWordOrThrow(wordId);
+        Words word = getWordOrThrow(wordId, jwtUtil.getCurrentUser().getId());
 
         Translation translation = translationMapper.fromDto(translationDto);
         translation.setWord(word);
@@ -215,18 +209,9 @@ public class WordsServiceImpl implements WordsService {
             throw new IllegalArgumentException("A word cannot be a synonym of itself");
         }
 
-        Words word = wordsRepository.findById(wordId)
-                .orElseThrow(() -> new WordNotFoundException("Word not found"));
-
-        Words synonym = wordsRepository.findById(synonymId)
-                .orElseThrow(() -> new WordNotFoundException("Synonym word not found"));
-
-        Users currentUser = jwtUtil.getCurrentUser();
-
-        if (!word.getOwner().equals(currentUser) ||
-                !synonym.getOwner().equals(currentUser)) {
-            throw new AccessDeniedException("You don't own these words");
-        }
+        UUID ownerId = jwtUtil.getCurrentUser().getId();
+        Words word = getWordOrThrow(wordId, ownerId);
+        Words synonym = getWordOrThrow(synonymId, ownerId);
 
         linkSynonyms(word, synonym);
 
@@ -241,18 +226,9 @@ public class WordsServiceImpl implements WordsService {
             throw new IllegalArgumentException("A word cannot be a synonym of itself");
         }
 
-        Words word = wordsRepository.findById(wordId)
-                .orElseThrow(() -> new WordNotFoundException("Word not found"));
-
-        Words synonym = wordsRepository.findById(synonymId)
-                .orElseThrow(() -> new WordNotFoundException("Synonym word not found"));
-
-        Users currentUser = jwtUtil.getCurrentUser();
-
-        if (!word.getOwner().equals(currentUser) ||
-                !synonym.getOwner().equals(currentUser)) {
-            throw new AccessDeniedException("You don't own these words");
-        }
+        UUID ownerId = jwtUtil.getCurrentUser().getId();
+        Words word = getWordOrThrow(wordId, ownerId);
+        Words synonym = getWordOrThrow(synonymId, ownerId);
 
         unlinkSynonyms(word, synonym);
 
@@ -263,16 +239,16 @@ public class WordsServiceImpl implements WordsService {
     @Override
     @Transactional
     public void deleteWord(UUID wordId) {
-        Words word = getWordOrThrow(wordId);
+        Words word = getWordOrThrow(wordId, jwtUtil.getCurrentUser().getId());
         eventPublisher.publishEvent(new WordDeletedDomainEvent(wordId, word.getOwner().getEmail()));
         wordStatisticsRepository.deleteByWordId(wordId);
         wordsRepository.delete(word);
     }
 
     // Clases auxiliares
-    private Words getWordOrThrow(UUID wordId) {
+    private Words getWordOrThrow(UUID wordId, UUID ownerId) {
         return wordsRepository
-                .findById(wordId)
+                .findByIdAndOwnerId(wordId, ownerId)
                 .orElseThrow(() -> new WordNotFoundException(
                         "Word with id " + wordId + " not found"
                 ));
