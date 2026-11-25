@@ -26,6 +26,12 @@ public class EnrichmentServiceClientConfig {
     @Value("${enrichment-service.read-timeout-ms:5000}")
     private int readTimeout;
 
+    // No default on purpose — a missing secret should fail the app at
+    // startup, not send an empty header silently (same convention as
+    // JWT_SECRET/DB_PASSWORD elsewhere in this project).
+    @Value("${enrichment-service.internal-secret}")
+    private String internalSecret;
+
     @Bean
     public RestClient enrichmentServiceRestClient(RestClient.Builder builder) {
         HttpClientSettings settings = HttpClientSettings.defaults()
@@ -37,6 +43,7 @@ public class EnrichmentServiceClientConfig {
             .baseUrl(baseUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .defaultHeader("X-Internal-Secret", internalSecret)
             .requestFactory(requestFactory)
             .build();
     }
