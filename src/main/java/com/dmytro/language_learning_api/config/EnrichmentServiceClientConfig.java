@@ -29,7 +29,7 @@ public class EnrichmentServiceClientConfig {
     // No default on purpose — a missing secret should fail the app at
     // startup, not send an empty header silently (same convention as
     // JWT_SECRET/DB_PASSWORD elsewhere in this project).
-    @Value("${enrichment-service.internal-secret}")
+    @Value("${enrichment-service.secret}")
     private String internalSecret;
 
     @Bean
